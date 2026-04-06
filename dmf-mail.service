@@ -1,0 +1,32 @@
+[Unit]
+Description=DMF Mail – FastAPI backend
+Documentation=https://github.com/DMF-Dev/DMF-Mail
+After=network.target postfix.service dovecot.service
+Wants=postfix.service dovecot.service
+
+[Service]
+Type=simple
+User=dmfmail
+Group=vmail
+WorkingDirectory=/opt/dmf-mail/backend
+ExecStart=/opt/dmf-mail/venv/bin/uvicorn main:app --host 127.0.0.1 --port 4007 --workers 2
+Restart=always
+RestartSec=5
+
+# Environment
+Environment="PYTHONUNBUFFERED=1"
+EnvironmentFile=-/etc/dmf-mail/env
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/dmf-mail/backend/data /var/mail/vhosts /etc/postfix /etc/dovecot
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=dmf-mail
+
+[Install]
+WantedBy=multi-user.target

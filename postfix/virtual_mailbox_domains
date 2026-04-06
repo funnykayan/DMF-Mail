@@ -1,0 +1,3 @@
+# /etc/postfix/virtual_mailbox_domains
+# One domain per line.  Managed by DMF Mail backend.
+dutchforcesrp.nl
