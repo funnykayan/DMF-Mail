@@ -171,6 +171,11 @@ postmap /etc/postfix/virtual_mailbox_maps
 newaliases
 postfix set-permissions
 
+# Allow dmfmail service user to write virtual map files (needed for _rebuild_maps)
+chown dmfmail:root /etc/postfix/virtual_mailbox_maps \
+                   /etc/postfix/virtual_mailbox_maps.db \
+                   /etc/postfix/virtual_mailbox_domains
+
 # Configure SMTP relay credentials if supplied in env
 if [[ -n "${RELAY_LOGIN:-}" && -n "${RELAY_PASSWORD:-}" && -n "${RELAY_HOST:-}" ]]; then
     echo "${RELAY_HOST} ${RELAY_LOGIN}:${RELAY_PASSWORD}" > /etc/postfix/sasl_passwd
