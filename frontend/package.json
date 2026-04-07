@@ -1,6 +1,6 @@
 {
   "name": "dmf-mail-frontend",
-  "version": "1.0.0",
+  "version": "1.1.6",
   "description": "DMF Mail webmail frontend",
   "main": "server.js",
   "scripts": {
