@@ -316,14 +316,20 @@ if ! command -v pm2 &>/dev/null; then
 fi
 
 chown -R dmfmail:vmail "${INSTALL_DIR}/frontend"
+# The frontend runs under the invoking user's PM2 daemon (not dmfmail),
+# so that it shares the same pm2 startup context as other services.
+REAL_USER="${SUDO_USER:-$(whoami)}"
+REAL_HOME=$(getent passwd "${REAL_USER}" | cut -d: -f6)
 
-# Start frontend with PM2 (as dmfmail user)
-su -s /bin/bash dmfmail -c "cd ${INSTALL_DIR}/frontend && pm2 start ecosystem.config.js --env production" || true
-pm2 save || true
+# Stop and remove any stale dmfmail-owned PM2 instance to avoid port conflicts
+su -s /bin/bash dmfmail -c "pm2 delete dmf-mail-frontend 2>/dev/null; pm2 save --force 2>/dev/null" || true
 
-# Make PM2 start on boot
-pm2 startup systemd -u dmfmail --hp "${INSTALL_DIR}" | tail -1 | bash || \
-    warn "PM2 startup cmd failed – run 'pm2 startup' manually as dmfmail."
+# Start frontend as the real (invoking) user
+su -s /bin/bash "${REAL_USER}" -c "cd ${INSTALL_DIR}/frontend && pm2 delete dmf-mail-frontend 2>/dev/null; pm2 start ecosystem.config.js --env production && pm2 save" || true
+
+# Make PM2 start on boot for the real user
+su -s /bin/bash "${REAL_USER}" -c "pm2 startup systemd -u ${REAL_USER} --hp ${REAL_HOME}" | tail -1 | bash || \
+    warn "PM2 startup cmd failed – run 'pm2 startup' manually as ${REAL_USER}."
 
 success "DMF Mail frontend installed and running (port 4006)."
 
