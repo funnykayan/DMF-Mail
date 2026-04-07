@@ -5,13 +5,17 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "lint": "eslint ."
   },
   "dependencies": {
     "express": "^4.19.2",
     "http-proxy-middleware": "^3.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.3.0",
+    "eslint": "^9.3.0",
+    "globals": "^15.0.0",
     "nodemon": "^3.1.0"
   }
 }

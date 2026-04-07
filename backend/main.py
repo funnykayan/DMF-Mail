@@ -13,20 +13,18 @@ Endpoints:
   POST /api/mail/send           – user: send email
 """
 
-from fastapi import FastAPI, Depends, HTTPException, status
+import auth as auth_module
+import database
+import mail as mail_module
+from config import DOMAIN
+from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
-import re
-
-import database
-import auth as auth_module
-import mail as mail_module
-from config import DOMAIN
 
 try:
     import postfix_utils
+
     POSTFIX_AVAILABLE = True
 except Exception:
     POSTFIX_AVAILABLE = False
@@ -45,11 +43,15 @@ app.add_middleware(
 
 # ── Startup ───────────────────────────────────────────────────────────────────
 
+
 @app.on_event("startup")
 def on_startup() -> None:
-    from config import INITIAL_ADMIN_EMAIL, INITIAL_ADMIN_PASSWORD
+    import os
+    import stat
     from pathlib import Path
-    import os, stat
+
+    from config import INITIAL_ADMIN_EMAIL, INITIAL_ADMIN_PASSWORD
+
     database.init_db()
 
     # Always sync admin password from env → SQLite
@@ -79,12 +81,16 @@ def on_startup() -> None:
             existing = passwd_file.read_text() if passwd_file.exists() else ""
             for acc in database.list_accounts():
                 if acc["is_active"] and acc["email"] not in existing:
-                    print(f"[startup] WARNING: {acc['email']} is missing from /etc/dovecot/users — reset their password via admin panel")
+                    print(
+                        f"[startup] WARNING: {acc['email']} is missing from "
+                        "/etc/dovecot/users — reset their password via admin panel"
+                    )
         except Exception as e:
             print(f"[startup] Warning: could not audit dovecot/users: {e}")
 
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
+
 
 class TokenResponse(BaseModel):
     access_token: str
@@ -119,6 +125,7 @@ def me(current_user: dict = Depends(auth_module.get_current_user)):
 
 # ── Accounts (admin) ──────────────────────────────────────────────────────────
 
+
 class CreateAccountRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8)
@@ -127,10 +134,10 @@ class CreateAccountRequest(BaseModel):
 
 
 class UpdateAccountRequest(BaseModel):
-    password: Optional[str] = None
-    quota_mb: Optional[int] = None
-    is_active: Optional[bool] = None
-    is_admin: Optional[bool] = None
+    password: str | None = None
+    quota_mb: int | None = None
+    is_active: bool | None = None
+    is_admin: bool | None = None
 
 
 def account_to_dict(row) -> dict:
@@ -194,7 +201,10 @@ def update_account(
             except Exception as e:
                 print(f"[postfix] Warning: {e}")
 
-    import sqlite3, config
+    import sqlite3
+
+    import config
+
     conn = sqlite3.connect(str(config.DB_PATH))
     conn.row_factory = sqlite3.Row
     if req.quota_mb is not None:
@@ -232,12 +242,13 @@ def delete_account(account_id: int, admin: dict = Depends(auth_module.require_ad
 
 # ── Mail ──────────────────────────────────────────────────────────────────────
 
+
 class SendEmailRequest(BaseModel):
     to: list[EmailStr]
     subject: str
     body: str
-    cc: Optional[list[EmailStr]] = None
-    bcc: Optional[list[EmailStr]] = None
+    cc: list[EmailStr] | None = None
+    bcc: list[EmailStr] | None = None
     # The API requires the sender's plain-text password to authenticate SMTP
     # (JWT is used for the API, but SMTP auth uses the actual mail password)
     password: str
@@ -316,4 +327,5 @@ def get_folders(
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("main:app", host="127.0.0.1", port=4007, reload=False)

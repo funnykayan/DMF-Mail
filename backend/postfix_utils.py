@@ -1,8 +1,15 @@
 """Helpers for keeping Postfix virtual mailbox flat-files in sync."""
+
 import subprocess
 from pathlib import Path
-from config import DOMAIN, POSTFIX_VIRTUAL_MAILBOX_MAPS, POSTFIX_VIRTUAL_MAILBOX_DOMAINS, MAILBOX_ROOT
+
 import database
+from config import (
+    DOMAIN,
+    MAILBOX_ROOT,
+    POSTFIX_VIRTUAL_MAILBOX_DOMAINS,
+    POSTFIX_VIRTUAL_MAILBOX_MAPS,
+)
 
 
 def _run(cmd: list[str]) -> None:
@@ -44,6 +51,7 @@ def _ensure_maildir(email: str) -> None:
 
 def _remove_maildir(email: str) -> None:
     import shutil
+
     local = email.split("@")[0]
     maildir = MAILBOX_ROOT / local
     if maildir.exists():
@@ -73,7 +81,6 @@ def sync_password_changed(email: str, new_password: str) -> None:
 def _update_dovecot_passwd(email: str, password: str | None = None) -> None:
     """Regenerate /etc/dovecot/users from the database (plus updated password)."""
     import crypt
-    import random
 
     passwd_file = Path("/etc/dovecot/users")
     lines = {}
@@ -98,9 +105,7 @@ def _update_dovecot_passwd(email: str, password: str | None = None) -> None:
         # We don't store plain-text passwords, so only update when explicitly given
         if acc["email"] == email and password:
             pw_hash = crypt.crypt(password, crypt.mksalt(crypt.METHOD_SHA512))
-            lines[acc["email"]] = (
-                f"{acc['email']}:{pw_hash}:{uid}:{gid}::{home}::"
-            )
+            lines[acc["email"]] = f"{acc['email']}:{pw_hash}:{uid}:{gid}::{home}::"
         elif acc["email"] not in lines:
             # Account exists in DB but not in passwd file and no password given
             # → skip rather than insert an unusable placeholder
@@ -113,6 +118,7 @@ def _update_dovecot_passwd(email: str, password: str | None = None) -> None:
 def rebuild_dovecot_passwd_full(account_passwords: dict[str, str]) -> None:
     """Rebuild /etc/dovecot/users from scratch given a dict of email→plain_password."""
     import crypt
+
     passwd_file = Path("/etc/dovecot/users")
     uid, gid = 5000, 5000
     lines = []

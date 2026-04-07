@@ -16,9 +16,9 @@ DB_PATH = BASE_DIR / "data" / "mail.db"
 
 # ── Mail server ───────────────────────────────────────────────────────────────
 SMTP_HOST = "localhost"
-SMTP_PORT = 587          # Postfix submission port (starttls)
+SMTP_PORT = 587  # Postfix submission port (starttls)
 IMAP_HOST = "localhost"
-IMAP_PORT = 993          # Dovecot imaps
+IMAP_PORT = 993  # Dovecot imaps
 
 # ── Mailbox root (must match Dovecot mail_home) ───────────────────────────────
 MAILBOX_ROOT = Path(os.getenv("MAILBOX_ROOT", f"/var/mail/vhosts/{DOMAIN}"))

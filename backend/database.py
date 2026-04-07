@@ -1,9 +1,10 @@
 """SQLite database bootstrap + helpers."""
-import sqlite3
+
 import hashlib
 import secrets
-from pathlib import Path
-from config import DB_PATH, INITIAL_ADMIN_EMAIL, INITIAL_ADMIN_PASSWORD, DOMAIN
+import sqlite3
+
+from config import DB_PATH, INITIAL_ADMIN_EMAIL, INITIAL_ADMIN_PASSWORD
 
 
 def _get_conn() -> sqlite3.Connection:
@@ -61,6 +62,7 @@ def init_db() -> None:
 
 
 # ── CRUD ──────────────────────────────────────────────────────────────────────
+
 
 def get_account_by_email(email: str) -> sqlite3.Row | None:
     conn = _get_conn()

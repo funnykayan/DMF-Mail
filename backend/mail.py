@@ -1,15 +1,16 @@
 """SMTP send + IMAP fetch helpers."""
-import smtplib
-import imaplib
+
 import email as email_lib
 import email.header
 import email.utils
+import imaplib
+import smtplib
 import ssl
-from typing import Optional
-from config import SMTP_HOST, SMTP_PORT, IMAP_HOST, IMAP_PORT
 
+from config import IMAP_HOST, IMAP_PORT, SMTP_HOST, SMTP_PORT
 
 # ── SSL context for localhost mail services ───────────────────────────────────
+
 
 def _local_ssl_context() -> ssl.SSLContext:
     """SSL context for localhost Dovecot/Postfix connections.
@@ -23,6 +24,7 @@ def _local_ssl_context() -> ssl.SSLContext:
 
 # ── SEND ─────────────────────────────────────────────────────────────────────
 
+
 def send_email(
     sender_email: str,
     sender_password: str,
@@ -33,8 +35,8 @@ def send_email(
     bcc: list[str] | None = None,
 ) -> None:
     """Send an email through the local Postfix submission port (587, STARTTLS)."""
-    from email.mime.text import MIMEText
     from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
 
     msg = MIMEMultipart("alternative")
     msg["From"] = sender_email
@@ -55,6 +57,7 @@ def send_email(
 
 
 # ── RECEIVE ───────────────────────────────────────────────────────────────────
+
 
 def _decode_header_value(value: str) -> str:
     parts = email.header.decode_header(value)

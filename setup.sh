@@ -25,7 +25,6 @@ REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="/etc/dmf-mail/env"
 VMAIL_UID=5000
 VMAIL_GID=5000
-PYTHON_MIN="3.10"
 
 ## ── Step 0 – Confirm ─────────────────────────────────────────────────────────
 echo ""

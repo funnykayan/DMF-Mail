@@ -17,7 +17,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   const listPanel     = document.getElementById('mail-list-panel');
   const viewPanel     = document.getElementById('mail-view-panel');
   const viewContent   = document.getElementById('mail-view-content');
-  const inboxCount    = document.getElementById('inbox-count');
   const pagination    = document.getElementById('pagination');
   const listLoading   = document.getElementById('mail-list-loading');
   const listEmpty     = document.getElementById('mail-list-empty');
